@@ -1,0 +1,8 @@
+https://www.daleseo.com/docker-compose-networks/
+
+https://stackoverflow.com/questions/36035595/communicating-between-docker-containers-in-different-networks-on-the-same-host
+
+https://cornswrold.tistory.com/500
+
+https://xenostudy.tistory.com/589
+

@@ -1,0 +1,143 @@
+# 일단 버전은 3을 사용합니다. 덕분에 extends기능이 없어졌더군요 ;(
+#version: '3'
+
+# 각 서비스 컨테이너를 정의합니다. ( nginx * 1 + tomcat * 2 )
+#services:
+version: "3.9"
+services:
+
+    mysql:
+        image: mysql
+        #command: mysqld --default-authentication-plugin=mysql_native_password
+        #command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+        environment:
+            - MYSQL_ROOT_PASSWORD:root
+            - MYSQL_DATABASE:test
+            - MYSQL_ROOT_HOST:'%'
+            #MYSQL_USER: root
+            #MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+            #TZ: Asia/Seoul 
+        volumes:
+        - "../database/:/var/lib/mysql"
+        ports:
+        - "3306:3306"
+        container_name: mysql
+        #networks:
+            #- docker_tomcat1
+            #- tomcat2
+        restart: always      
+        networks:
+            - eshopping
+    # tomcat 1번 서버입니다. 같은 설정을 2번에서도 사용하기 때문에 &was로 명명하고 tomcat2에서 참조합니다.
+    # tomcat1 서비스의 모든 관련파일은 ./tomcat1 폴더에서 가져옵니다. 
+    tomcat1:
+        image: tomcat1
+        # tomcat 기동시 java option값을 추가하기 위해 아래 설정을 추가했습니다. 
+        environment:
+            - JAVA_OPTS=-Dspring.profiles.active=docker -Dfile.encoding=euc-kr
+            - MYSQL_ADDRESS:mysql
+            - MYSQL_USERNAME:root
+            - MYSQL_PASSWORD:root
+            #- SPRING_DATASOURCE_URL:jdbc:mysql://192.168.0.83:3306/test?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+        build: 
+            context: .
+            # Dockerfile을 실행시 conf/server.xml과 webapps에 파일 배포를 위해 argument를 추가합니다.
+            # 아래 값은 DockerfileTomcat에서 사용됩니다.
+            args:
+                conf: ../tomcat/conf
+                warpath: ../tomcat/webapps/ROOT.war
+            # tomcat 서버 이미지 빌드를 위한 Dockerfile을 별도로 지정해줍니다.
+            dockerfile: ./DockerfileTomcat
+        # 
+        # Docker 컨테이너에 붙지 않고 각 tomcat서버의 로그를 따로 확인하기 위해 외부 저장소와 연결합니다.
+        volumes:
+            - ../tomcat/logs/:/usr/local/tomcat/logs/
+        #volumes:
+        #    - ../tomcat/:/usr/local/tomcat/
+        #ports: 
+        #    - "8080:8080"
+        #links:
+        #   - redis 
+        links:
+            - mysql 
+        container_name: tomcat1
+        depends_on:
+            - mysql
+        restart: always  
+        networks:
+            - eshopping    
+    # tomcat2번 서버입니다. tomcat1 서비스에서 설정한 내용을 그대로 사용하고 달라지는 설정에 대해서는 아래와 같이 직접 입력해줍니다.
+    tomcat2:
+        image: tomcat2
+        environment:
+            - JAVA_OPTS=-Dspring.profiles.active=docker -Dfile.encoding=euc-kr
+            - MYSQL_ADDRESS:mysql
+            - MYSQL_USERNAME:root
+            - MYSQL_PASSWORD:root
+            #- SPRING_DATASOURCE_URL:jdbc:mysql://192.168.0.83:3306/test?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+        build: 
+            context: .
+            
+            args:
+                conf: ../tomcat/conf
+                warpath: ../tomcat/webapps/ROOT.war
+
+            # tomcat 서버 이미지 빌드를 위한 Dockerfile을 별도로 지정해줍니다.
+            dockerfile: ./DockerfileTomcat
+            
+        volumes:
+            - ../tomcat/logs/:/usr/local/tomcat/logs/
+        #links:
+        #   - redis     
+        container_name: tomcat2
+        links:
+            - mysql
+        depends_on:
+            - mysql
+        restart: always  
+        networks:
+            - eshopping    
+    # nginx 설정입니다.
+    nginx:
+        image: nginx
+        build:
+            context: .
+            # nginx 서버 이미지 빌드를 위한 Dockerfile을 별도로 지정해줍니다.
+            dockerfile: ./DockerfileNginx
+            # Dockerfile실행시 conf/nginx.conf파일이 복사 될 수 있도록 argument를 추가합니다.
+            # 아래 값은 DockerfileNginx에서 사용됩니다.
+            args:
+                conf: ../nginx/conf
+        # 외부에서 직접 8080포트로 붙어야 하기 때문에 컨테이너 포트를 외부로 열어줍니다.
+        ports: 
+            - "8080:8080"
+        #volumes:
+        #    - ./nginx:/etc/nginx
+        container_name: nginx
+        depends_on:
+            - tomcat1
+            - tomcat2
+        volumes_from:
+            - tomcat1
+            - tomcat2
+        links:
+            - tomcat1
+            - tomcat2
+        networks:
+            - eshopping        
+    # redis 설정  requirepass는 스프링부트에 설정한 redis password 이다
+    redis:
+      image: redis:latest
+      command: redis-server --requirepass changeme --port 6379
+      container_name: redis
+      hostname: redis
+      labels:
+        - "name=redis"
+        - "mode=standalone"
+      ports:
+        - 6379:6379     
+        
+# networks 가 있어야 컨테이너 끼리 통신 가능
+networks:
+  eshopping:
+    driver: bridge

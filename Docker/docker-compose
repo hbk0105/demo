@@ -1,0 +1,60 @@
+# 일단 버전은 3을 사용합니다. 덕분에 extends기능이 없어졌더군요 ;(
+version: '3'
+
+# 각 서비스 컨테이너를 정의합니다. ( nginx * 1 + tomcat * 2 )
+services:
+    # tomcat 1번 서버입니다. 같은 설정을 2번에서도 사용하기 때문에 &was로 명명하고 tomcat2에서 참조합니다.
+    # tomcat1 서비스의 모든 관련파일은 ./tomcat1 폴더에서 가져옵니다. 
+    tomcat: &was
+        # tomcat 기동시 java option값을 추가하기 위해 아래 설정을 추가했습니다. 
+        environment:
+            - JAVA_OPTS=-Dspring.profiles.active=docker -Dfile.encoding=euc-kr
+        build: 
+            context: .
+            # Dockerfile을 실행시 conf/server.xml과 webapps에 파일 배포를 위해 argument를 추가합니다.
+            # 아래 값은 DockerfileTomcat에서 사용됩니다.
+            args:
+                conf: D:/apache-tomcat-8.5.61/conf
+                warpath: D:/apache-tomcat-8.5.61/webapps/ROOT.war
+            # tomcat 서버 이미지 빌드를 위한 Dockerfile을 별도로 지정해줍니다.
+            dockerfile: ./dockerfiletomcat
+        # 
+        # Docker 컨테이너에 붙지 않고 각 tomcat서버의 로그를 따로 확인하기 위해 외부 저장소와 연결합니다.
+        volumes:
+            - D:/apache-tomcat-8.5.61/logs/:/usr/local/tomcat/logs/
+    
+    # tomcat2번 서버입니다. tomcat1 서비스에서 설정한 내용을 그대로 사용하고 달라지는 설정에 대해서는 아래와 같이 직접 입력해줍니다.
+    #tomcat2:
+    #    <<: *was
+    #    build: 
+    #        context: .
+    #        args:
+    #            conf: tomcat2/conf
+    #            warpath: tomcat2/webapps/ROOT.war
+    #        dockerfile: ./DockerfileTomcat
+    #    volumes:
+    #        - ./tomcat2/logs/:/usr/local/tomcat/logs/
+    # nginx 설정입니다.
+    nginx:
+        build:
+            context: .
+            # nginx 서버 이미지 빌드를 위한 Dockerfile을 별도로 지정해줍니다.
+            dockerfile: ./dockerfilenginx
+            # Dockerfile실행시 conf/nginx.conf파일이 복사 될 수 있도록 argument를 추가합니다.
+            # 아래 값은 DockerfileNginx에서 사용됩니다.
+            #args:
+                #conf: D:/nginx-1.18.0/conf
+        # 외부에서 직접 8080포트로 붙어야 하기 때문에 컨테이너 포트를 외부로 열어줍니다.
+        ports: 
+            - "80:8080"
+    # redis 설정        
+    redis:
+      image: redis:latest
+      command: redis-server --requirepass changeme --port 6379
+      container_name: redis6379
+      hostname: redis6379
+      labels:
+        - "name=redis"
+        - "mode=standalone"
+      ports:
+        - 6379:6379           

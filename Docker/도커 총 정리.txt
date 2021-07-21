@@ -1,0 +1,101 @@
+
+
+
+# 설정 시작 
+https://jistol.github.io/docker/2017/09/19/docker-compose-tomcat-clustering/
+
+https://abc2080.tistory.com/entry/docker-tomcat-85-%EC%84%A4%EC%B9%98-%EB%B0%8F-war-%EC%A0%81%EC%9E%AC-%ED%9B%84-%EC%8B%A4%ED%96%89
+
+https://www.programmersought.com/article/3581600726/
+# 설정 종료
+
+########################################################################################
+
+아래 예제는 톰캣, 엔진엑스 별도의 도커파일을 이용하여 이미지를 만들고, 이미지 별로 실행하는 예제이다
+
+dockerfile 생성 참조 : https://darrengwon.tistory.com/797
+
+도커파일 빌드 - https://stackoverflow.com/questions/48543796/dockerfile-the-system-cannot-find-the-file-specified
+1. was- 톰캣 파일 빌드
+	docker build --no-cache -t dockerfiletomcat -f D:/Docker/DockerfileTomcat .
+
+	# 도커에 있는 톰캣과 로컬 톰캣을 마운트(심볼릭) 걸어 컨테이너 실행
+	docker run --name dockerfiletomcat -v D:/apache-tomcat-8.5.61/webapps/ROOT.war:/usr/local/tomcat/webapps/ROOT.war:ro -d -p 8080:8080 dockerfiletomcat
+
+2. web- 엔진엑스 파일 빌드
+	docker build --no-cache -t dockerfilenginx -f D:/Docker/DockerfileNginx .
+
+	# 도커에 있는 엔진엑스와 로컬 엔진엑스를 마운트(심볼릭) 걸어 컨테이너 실행
+	docker run --name dockerfilenginx -v D:/nginx-1.18.0/conf/nginx.conf:/etc/nginx/nginx.conf:ro -d -p 80:80 dockerfilenginx
+
+
+3. docker-compose 파일 빌드
+	docker-compose up -d
+
+
+########################################################################################
+
+
+아래 예제는 docker-compose을 이용하여 (톰캣,엔진엑스 도커파일)을 하나의 파일로 만들어서 실행하는 예제이다
+
+실행 중인 컨테이너 접속
+docker exec -it 컨테이너ID /bin/bash
+
+
+
+※ 도커 docker-compose 파일 실행 방법
+	https://jistol.github.io/docker/2017/09/19/docker-compose-tomcat-clustering/
+
+※ 엔진엑스 + 톰캣 + docker-compose 포함 모든 설정 파일은 d:/docker 에 포함되어 있음
+
+1. 파일 위치로 이동 (d:/docker/docker-compose.yml)
+
+	ex) cmd -> cd d:/docker 이동
+       
+		명령어 : docker-compose up -d
+
+
+2. 컨테이너 도커허브에 푸시 하기
+
+	docker login -u hbk0105 -p hee0701!! docker.io # 도커 로그인
+
+	docker images #  이미지 조회
+
+	ex) tomcat1:latest --> 이미지명:태그
+
+	해당 이미지 위치를 도커허브아이디/이미지명:태그로 변경하지않을 경우 푸시가 되지 않음
+
+	* 도커에서 계정아이디/이미지명:태그로 되어 있는 이미지만 푸시가 가능함.
+
+	실제 사례
+	docker_tomcat1:latest 을 복사하여 hbk0105/docker_tomcat1:latest 로 변경 
+
+	복사 명령어 : docker image tag docker_tomcat1:latest hbk0105/docker_tomcat1:latest
+
+	푸시 명령어 : docker push hbk0105/docker_tomcat1:latest
+
+
+########################################################################################
+
+기타 참조 링크
+
+https://nirsa.tistory.com/m/164
+
+https://cultivo-hy.github.io/docker/image/usage/2019/03/14/Docker%EC%A0%95%EB%A6%AC/
+
+https://adoreje.tistory.com/m/8
+
+https://lahuman1.wordpress.com/2015/05/11/docker%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC-%EC%9B%B9-%EC%82%AC%EC%9D%B4%ED%8A%B8-%EA%B5%AC%EC%B6%95-%ED%95%98%EA%B8%B0/
+
+https://github.com/dmulligan/docker-example-nginx-tomcat-mysql/blob/master/docker-compose.yml
+
+https://joont92.github.io/docker/volume-container-%EC%B6%94%EA%B0%80%ED%95%98%EA%B8%B0/
+
+https://www.daleseo.com/docker-compose/
+
+https://mrgamza.tistory.com/765
+
+https://jsonobject.tistory.com/535
+
+https://velog.io/@ette9844/Windows10-%EC%97%90%EC%84%9C-varlibdocker-%EC%B0%BE%EA%B8%B0
+

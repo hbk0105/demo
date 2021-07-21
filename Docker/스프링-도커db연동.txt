@@ -1,0 +1,30 @@
+ 
+# gradle
+ runtimeOnly 'mysql:mysql-connector-java'
+
+# application.yml
+
+# db url [mysql]은 도커 mysql의 컨테이너명
+
+spring :
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver #com.mysql.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/test?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&useSSL=true
+    username: root
+    password: root
+
+  jpa:
+    #database: mysql
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect #org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    hibernate:
+      ddl-auto: update #none
+
+  redis:
+    host: 192.168.0.83  # docker 에서는 localhost , 127.0.0.1 아닌 기본 IP로 해야 함
+    port: 6379
+    password: changeme
+

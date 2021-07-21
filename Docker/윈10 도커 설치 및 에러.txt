@@ -1,0 +1,20 @@
+# 윈10 프로 도커 설치
+
+1. https://hub.docker.com/editions/community/docker-ce-desktop-windows/
+
+https://wings2pc.tistory.com/entry/%EB%8F%84%EC%BB%A4Docker-%EB%8F%84%EC%BB%A4-%EC%84%A4%EC%B9%98Windows-MacOS%EC%99%80-%EC%9B%B9%EC%84%9C%EB%B2%84-%EA%B5%AC%EB%8F%99
+
+
+########################################################################################
+
+윈10 프로 도커 오류 
+: Hardware assisted virtualization and data execution protection must be enabled in the BIOS. See https://docs.docker.com/docker-for-windows/troubleshoot/#virtualization
+
+
+참고 링크 - https://gofnrk.tistory.com/51
+
+powerShell -> Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+
+
+해결 : window 기능 끄기/켜기 -> 
+가상화 체크 풀고 재시작,  가상화 체크 하고 재시작
