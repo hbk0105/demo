@@ -11,9 +11,9 @@ services:
         #command: mysqld --default-authentication-plugin=mysql_native_password
         #command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
         environment:
-            - MYSQL_ROOT_PASSWORD:root
-            - MYSQL_DATABASE:test
-            - MYSQL_ROOT_HOST:'%'
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=test
+            - MYSQL_ROOT_HOST='%'
             #MYSQL_USER: root
             #MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
             #TZ: Asia/Seoul 
@@ -35,9 +35,9 @@ services:
         # tomcat 기동시 java option값을 추가하기 위해 아래 설정을 추가했습니다. 
         environment:
             - JAVA_OPTS=-Dspring.profiles.active=docker -Dfile.encoding=euc-kr
-            - MYSQL_ADDRESS:mysql
-            - MYSQL_USERNAME:root
-            - MYSQL_PASSWORD:root
+            - MYSQL_ADDRESS=mysql
+            - MYSQL_USERNAME=root
+            - MYSQL_PASSWORD=root
             #- SPRING_DATASOURCE_URL:jdbc:mysql://192.168.0.83:3306/test?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
         build: 
             context: .
@@ -71,9 +71,9 @@ services:
         image: tomcat2
         environment:
             - JAVA_OPTS=-Dspring.profiles.active=docker -Dfile.encoding=euc-kr
-            - MYSQL_ADDRESS:mysql
-            - MYSQL_USERNAME:root
-            - MYSQL_PASSWORD:root
+            - MYSQL_ADDRESS=mysql
+            - MYSQL_USERNAME=root
+            - MYSQL_PASSWORD=root
             #- SPRING_DATASOURCE_URL:jdbc:mysql://192.168.0.83:3306/test?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
         build: 
             context: .
